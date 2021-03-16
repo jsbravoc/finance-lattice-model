@@ -1,0 +1,50 @@
+{
+  "name": "finance-binary-trees",
+  "version": "1.0.0",
+  "description": "Binary tree implementation",
+  "main": "./BinaryTree/index.js",
+  "scripts": {
+    "test": "mocha",
+    "start": "node ./examples/complex_example.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jsbravoc/finance-binary-trees.git"
+  },
+  "files": [
+    "Graph"
+  ],
+  "keywords": [
+    "Binary",
+    "Tree",
+    "Finance",
+    "Options",
+    "European",
+    "American",
+    "Put",
+    "Call"
+  ],
+  "author": "Juan Sebastián Bravo <js.bravo@uniandes.edu.co>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jsbravoc/finance-binary-trees/issues"
+  },
+  "homepage": "https://github.com/jsbravoc/finance-binary-trees#readme",
+  "devDependencies": {
+    "chai": "^4.2.0",
+    "eslint": "^7.22.0",
+    "eslint-config-airbnb-base": "^14.2.1",
+    "eslint-plugin-import": "^2.22.1",
+    "mocha": "^8.2.0"
+  },
+  "dependencies": {
+    "exceljs": "^4.2.1",
+    "lodash": "^4.17.21",
+    "print-tree": "^0.1.5",
+    "uuid": "^8.3.2"
+  },
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  }
+}
