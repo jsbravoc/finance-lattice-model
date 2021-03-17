@@ -7,6 +7,7 @@
 const ExcelJS = require('exceljs');
 const { Node } = require('./Node');
 const Constants = require('./Constants');
+const Decimal = require("decimal.js");
 
 /** Class representing a Weighted directed or undirected Graph */
 /** Class representing a Weighted directed or undirected Graph */
@@ -19,6 +20,7 @@ module.exports = class FinanceBinaryTree {
    * @param {Number} [sigma] - The volatility rate of the stock.
    * @param {Number} [periods] - The periods or iterations of the binary tree
    * @param {String} [option] - The option to evaluate. @see Constants.Options;
+   * @returns {FinanceBinaryTree} - The instance of the class.
    */
   constructor({
     S = 50,
@@ -27,21 +29,37 @@ module.exports = class FinanceBinaryTree {
     sigma = 0.1,
     periods = 252,
     option = Constants.Options.EUROPEAN.PUT,
+    defined_dt = null,
+    defined_u = null,
+    defined_a = null,
+    defined_d = null,
+    defined_p = null,
   } = {}) {
     this.nodesByLevel = {};
 
     const root = new Node(S);
-    this.nodesByLevel['0'] = [root];
+    this.nodesByLevel["0"] = [root];
 
-    const dt = 1 / periods;
-    const a = Math.exp(r * dt);
-    const u = Math.exp(sigma * Math.sqrt(dt));
-    const d = 1 / u;
-    const p = (a - d) / (u - d);
+    const dt = defined_dt ? Decimal(defined_dt) : Decimal(1).dividedBy(periods);
+    const a = defined_a ? Decimal(defined_a) : Decimal(1).naturalExponential().toPower(Decimal(r).times(dt));
+    const u = defined_u
+      ? Decimal(defined_u)
+      :  Decimal(1)
+          .naturalExponential()
+          .toPower(Decimal(sigma).times(dt.squareRoot()));
+    const d = defined_d ? Decimal(defined_d) : Decimal(1).dividedBy(u);
+    const p = defined_p ? Decimal(defined_p) : a.minus(d).dividedBy(u.minus(d));
 
     this.createTreeNodes(u, d, periods);
     this.setTreeProfit(option, K, p, r, dt);
-    return this;
+  }
+
+  /**
+   * Returns the root of the tree.
+   * @return {Node} - The root of the tree.
+   */
+  getRoot() {
+    return this.nodesByLevel[0][0];
   }
 
   /**
@@ -72,8 +90,8 @@ module.exports = class FinanceBinaryTree {
 
   createTreeNodes(u, d, maxIterations, currentIndex = 0) {
     if (
-      currentIndex === maxIterations
-      || Object.keys(this.nodesByLevel).length > maxIterations
+      currentIndex === maxIterations ||
+      Object.keys(this.nodesByLevel).length > maxIterations
     ) {
       return true;
     }
@@ -84,8 +102,8 @@ module.exports = class FinanceBinaryTree {
         index++
       ) {
         if (
-          this.nodesByLevel[currentIndex + 1] == null
-          || !Array.isArray(this.nodesByLevel[currentIndex + 1])
+          this.nodesByLevel[currentIndex + 1] == null ||
+          !Array.isArray(this.nodesByLevel[currentIndex + 1])
         ) {
           this.nodesByLevel[currentIndex + 1] = [];
         }
@@ -95,16 +113,18 @@ module.exports = class FinanceBinaryTree {
 
         if (
           !this.nodesByLevel[currentIndex + 1].find(
-            (node) => node.id === children[Constants.Node.UP].id,
+            (node) => node.id === children[Constants.Node.UP].id
           )
-        ) { this.nodesByLevel[currentIndex + 1].push(children[Constants.Node.UP]); }
+        ) {
+          this.nodesByLevel[currentIndex + 1].push(children[Constants.Node.UP]);
+        }
         if (
           !this.nodesByLevel[currentIndex + 1].find(
-            (node) => node.id === children[Constants.Node.DOWN].id,
+            (node) => node.id === children[Constants.Node.DOWN].id
           )
         ) {
           this.nodesByLevel[currentIndex + 1].push(
-            children[Constants.Node.DOWN],
+            children[Constants.Node.DOWN]
           );
         }
       }
@@ -126,7 +146,9 @@ module.exports = class FinanceBinaryTree {
     for (const level in this.nodesByLevel) {
       if (Object.hasOwnProperty.call(this.nodesByLevel, level)) {
         if (this.nodesByLevel[level][index]) {
-          obj[level] = this.nodesByLevel[level][index][attribute];
+          if (this.nodesByLevel[level][index][attribute].toString) {
+            obj[level] = this.nodesByLevel[level][index][attribute].toString();
+          } else obj[level] = this.nodesByLevel[level][index][attribute] + "";
         }
       }
     }
@@ -141,28 +163,39 @@ module.exports = class FinanceBinaryTree {
    */
   exportToExcel() {
     if (Object.keys(this.nodesByLevel).length === 0) {
-      throw new Error('Tree is empty');
+      throw new Error("Tree is empty");
     } else {
       const workbook = new ExcelJS.Workbook();
-      const ws = workbook.addWorksheet('Exported tree');
-      const columns = [{ header: 'T', key: 'T' }];
+      const wsPrice = workbook.addWorksheet("Exported price tree");
+      const columns = [{ header: "T", key: "T" }];
       for (const level in this.nodesByLevel) {
         if (Object.hasOwnProperty.call(this.nodesByLevel, level)) {
           columns.push({ header: `${level}`, key: `${level}` });
         }
       }
-
-      ws.columns = columns;
+      wsPrice.columns = columns;
       for (
         let index = 0;
-        index
-        < this.nodesByLevel[Object.keys(this.nodesByLevel).length - 1].length;
+        index <
+        this.nodesByLevel[Object.keys(this.nodesByLevel).length - 1].length;
         index++
       ) {
-        ws.addRow(this.getContiguousValues(index, 'profit'));
+        wsPrice.addRow(this.getContiguousValues(index, "profit"));
       }
 
-      workbook.xlsx.writeFile('export.xlsx');
+      const wsValue = workbook.addWorksheet("Exported value tree");
+      wsValue.columns = columns;
+      for (
+        let index = 0;
+        index <
+        this.nodesByLevel[Object.keys(this.nodesByLevel).length - 1].length;
+        index++
+      ) {
+        wsValue.addRow(this.getContiguousValues(index, "value"));
+      }
+
+      workbook.xlsx.writeFile("exportedTree.xlsx");
+      require("open")("exportedTree.xlsx");
     }
   }
 

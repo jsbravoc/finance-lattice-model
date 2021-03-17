@@ -38,8 +38,10 @@
     "mocha": "^8.2.0"
   },
   "dependencies": {
+    "decimal.js": "^10.2.1",
     "exceljs": "^4.2.1",
     "lodash": "^4.17.21",
+    "open": "^8.0.2",
     "print-tree": "^0.1.5",
     "uuid": "^8.3.2"
   },

@@ -1,6 +1,8 @@
 const Constant = require("./Constants");
 const _ = require("lodash");
 const { v4: uuidv4 } = require("uuid");
+const Decimal = require('decimal.js');
+
 /** Class representing a Node in the Binary Tree*/
 module.exports = {
   Node: class Node {
@@ -18,12 +20,15 @@ module.exports = {
         if (Number.isNaN(nameAsValue)) {
           throw new Error(`Node ${name} has no value`);
         }
-        value = nameAsValue;
+        value = Decimal(nameAsValue);
       }
       this.value = value;
 
       this.children = children || { UP: null, DOWN: null };
-      if (this.hasChildren() && this.children.UP < this.children.DOWN) {
+      if (
+        this.hasChildren() &&
+        Decimal(this.children.UP.value).greaterThan(Decimal(this.children.DOWN.value))
+      ) {
         this.children = { UP: this.children.DOWN, DOWN: this.children.UP };
       }
       this.level = level;
@@ -50,15 +55,18 @@ module.exports = {
      */
     addChildrenPair(u, d, level, sibling = null) {
       let childUp, childDown;
+      const childUpValue = Decimal(this.value).times(u);
+      const childDownValue = Decimal(this.value).times(d);
       if (sibling) {
-        const childUpValue = this.value * u;
-        const childDownValue = this.value * d;
+        
         const potentialUpChild = sibling
           .getChildren()
-          .find((node) => node.value - childUpValue < 1e-10);
+          .find((node) =>
+            Decimal(node.value).minus(childUpValue).lessThan(Decimal(1e-10))
+          );
         const potentialDownChild = sibling
           .getChildren()
-          .find((node) => node.value - childDownValue < 1e-10);
+          .find((node) => Decimal(node.value).minus(childDownValue).lessThan(Decimal(1e-10)));
         if (potentialUpChild) {
           childUp = this.addChildren(Constant.Node.UP, potentialUpChild);
         }
@@ -69,13 +77,13 @@ module.exports = {
       if (!childUp) {
         childUp = this.addChildren(
           Constant.Node.UP,
-          new Node(this.value * u, undefined, undefined, level)
+          new Node(childUpValue, undefined, undefined, level)
         );
       }
       if (!childDown) {
         childDown = this.addChildren(
           Constant.Node.DOWN,
-          new Node(this.value * d, undefined, undefined, level)
+          new Node(childDownValue, undefined, undefined, level)
         );
       }
 
@@ -130,7 +138,7 @@ module.exports = {
         if (Object.hasOwnProperty.call(this.children, child)) {
           if (
             this.children[child].profit == null ||
-            this.children[child].profit < -1
+            Number(this.children[child].profit) < -1
           ) {
             return false;
           }
@@ -151,26 +159,49 @@ module.exports = {
       if (!this.hasChildren()) {
         switch (option) {
           case Constant.Options.EUROPEAN.PUT:
-            this.profit = Math.max(K - this.value, 0);
+          case Constant.Options.AMERICAN.PUT:
+            this.profit = Decimal(K).greaterThan(Decimal(this.value))
+              ? Decimal(K).minus(Decimal(this.value))
+              : Decimal(0);
             break;
           case Constant.Options.EUROPEAN.CALL:
-            this.profit = Math.max(this.value - K, 0);
-            break;
-          case Constant.Options.AMERICAN.PUT:
-            this.profit = Math.max(this.value - K, 0);
-            break;
           case Constant.Options.AMERICAN.CALL:
-            this.profit = Math.max(this.value - K);
+            this.profit = Decimal(this.value).greaterThan(Decimal(K))
+              ? Decimal(this.value).minus(Decimal(K))
+              : Decimal(0);
             break;
         }
       } else {
-        this.profit =
-          (p * this.children[Constant.Node.UP].profit +
-            (1 - p) * this.children[Constant.Node.DOWN].profit) *
-          Math.exp(-r * dt);
-        if (Number.isNaN(this.profit)) {
-          console.log("NAN");
+        const expectedIfUp = Decimal(p).times(this.children[Constant.Node.UP].profit);
+        const expectedIfDown = (Decimal(1).minus(p)).times(
+          this.children[Constant.Node.DOWN].profit
+        );
+
+        let profitIfWaits = expectedIfUp.plus(expectedIfDown);
+        profitIfWaits = profitIfWaits.times(
+          Decimal(1)
+            .naturalExponential()
+            .toPower(Decimal(-r).times(Decimal(dt)))
+        );
+
+        switch (option) {
+          case Constant.Options.EUROPEAN.PUT:
+          case Constant.Options.EUROPEAN.CALL:
+            this.profit = profitIfWaits;
+            break;
+          case Constant.Options.AMERICAN.CALL:
+            this.profit = (Decimal(this.value).minus(Decimal(K))).greaterThan(profitIfWaits)
+              ? Decimal(this.value).minus(Decimal(K))
+              : profitIfWaits;
+            break;
+          case Constant.Options.AMERICAN.PUT:
+            this.profit = (Decimal(K).minus(Decimal(this.value))).greaterThan(profitIfWaits)
+              ? Decimal(K).minus(Decimal(this.value))
+              : profitIfWaits;
+            break;
+            
         }
+        
       }
     }
 
