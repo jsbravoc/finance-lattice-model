@@ -1,6 +1,6 @@
 
-const { FinanceBinaryTree, Constants } = require("../FinanceBinaryTree");
-const binaryTree = new FinanceBinaryTree({
+const { FinanceLatticeModel, Constants } = require("../FinanceLatticeModel");
+const binaryTree = new FinanceLatticeModel({
   S: 85.370003,
   K: 87,
   r: 0.28 / 100,

@@ -1,6 +1,6 @@
 /**
- * https://github.com/jsbravoc/dijkstra-floydwarshall-graph
- * @description Calculates Dijkstra & Floyd Warshall Algorithm for directed or undirected weighted graphs.
+ * https://github.com/jsbravoc/finance-lattice-model
+ * @description Calculates a Finance Lattice Model.
  * @author Juan Sebastián Bravo <js.bravo@uniandes.edu.co>
  */
 
@@ -9,18 +9,22 @@ const { Node } = require('./Node');
 const Constants = require('./Constants');
 const Decimal = require("decimal.js");
 
-/** Class representing a Weighted directed or undirected Graph */
-/** Class representing a Weighted directed or undirected Graph */
-module.exports = class FinanceBinaryTree {
+/** Class representing a Finance Lattice Model */
+module.exports = class FinanceLatticeModel {
   /**
    * Create a Weighted (Un)directed Graph.
    * @param {Number} [S] - The current price of the stock (S0)
-   * @param {Number} [K] - The strike price of the option.
+   * @param {Number} [K] - The strike price of the option (also called exercise price).
    * @param {Number} [r] - The risk free rate.
    * @param {Number} [sigma] - The volatility rate of the stock.
    * @param {Number} [periods] - The periods or iterations of the binary tree
    * @param {String} [option] - The option to evaluate. @see Constants.Options;
-   * @returns {FinanceBinaryTree} - The instance of the class.
+   * @param {String} [defined_dt] - Defined time delta to use (by default is 1/periods).
+   * @param {String} [defined_u] - Defined up multiplier to use (by default is e^(sigma * sqrt(dt))).
+   * @param {String} [defined_a] - Defined a multiplier to use (by default is e^(sigma * dt)).
+   * @param {String} [defined_d] - Defined down multiplier to use (by default is 1/u === e^(-sigma * sqrt(dt))).
+   * @param {String} [defined_p] - Defined up probability multiplier to use (by default is ( a - d ) / (u - d) ).
+   * @returns {FinanceLatticeModel} - The instance of the class.
    */
   constructor({
     S = 50,
@@ -41,10 +45,12 @@ module.exports = class FinanceBinaryTree {
     this.nodesByLevel["0"] = [root];
 
     const dt = defined_dt ? Decimal(defined_dt) : Decimal(1).dividedBy(periods);
-    const a = defined_a ? Decimal(defined_a) : Decimal(1).naturalExponential().toPower(Decimal(r).times(dt));
+    const a = defined_a
+      ? Decimal(defined_a)
+      : Decimal(1).naturalExponential().toPower(Decimal(r).times(dt));
     const u = defined_u
       ? Decimal(defined_u)
-      :  Decimal(1)
+      : Decimal(1)
           .naturalExponential()
           .toPower(Decimal(sigma).times(dt.squareRoot()));
     const d = defined_d ? Decimal(defined_d) : Decimal(1).dividedBy(u);

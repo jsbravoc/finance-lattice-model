@@ -1,15 +1,15 @@
 {
-  "name": "finance-binary-trees",
+  "name": "finance-lattice-model",
   "version": "1.0.0",
-  "description": "Binary tree implementation",
-  "main": "./BinaryTree/index.js",
+  "description": "Finance Lattice Model implementation",
+  "main": "./FinanceLatticeModel/index.js",
   "scripts": {
     "test": "mocha",
     "start": "node ./examples/complex_example.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/jsbravoc/finance-binary-trees.git"
+    "url": "git+https://github.com/jsbravoc/finance-lattice-model.git"
   },
   "files": [
     "Graph"
@@ -27,9 +27,9 @@
   "author": "Juan Sebastián Bravo <js.bravo@uniandes.edu.co>",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/jsbravoc/finance-binary-trees/issues"
+    "url": "https://github.com/jsbravoc/finance-lattice-model/issues"
   },
-  "homepage": "https://github.com/jsbravoc/finance-binary-trees#readme",
+  "homepage": "https://github.com/jsbravoc/finance-lattice-model#readme",
   "devDependencies": {
     "chai": "^4.2.0",
     "eslint": "^7.22.0",
