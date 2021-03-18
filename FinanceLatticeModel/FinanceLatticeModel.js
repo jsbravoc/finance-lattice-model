@@ -164,13 +164,21 @@ module.exports = class FinanceLatticeModel {
   /**
    * Exports tree to Excel (values only)
    * @pre A tree exists and its values (option and pricing) are calculated.
+   * @param {String} filename - Filename to export the Excel file.
    * @post A new Excel file is created "by default with name export.xlsx"
    * @throws {Error} If the tree is empty.
+   * @throws {Error} If the filename parameter is empty.
    */
-  exportToExcel() {
+  exportToExcel(filename) {
     if (Object.keys(this.nodesByLevel).length === 0) {
       throw new Error("Tree is empty");
     } else {
+      if (!filename) {
+        throw new Error("The filename is required");
+      }
+      if (!filename.endsWith(".xlsx")) {
+        filename = `${filename}.xlsx`;
+      }
       const workbook = new ExcelJS.Workbook();
       const wsPrice = workbook.addWorksheet("Exported price tree");
       const columns = [{ header: "T", key: "T" }];
@@ -200,8 +208,8 @@ module.exports = class FinanceLatticeModel {
         wsValue.addRow(this.getContiguousValues(index, "value"));
       }
 
-      workbook.xlsx.writeFile("exportedTree.xlsx");
-      require("open")("exportedTree.xlsx");
+      workbook.xlsx.writeFile(filename);
+      require("open")(filename);
     }
   }
 

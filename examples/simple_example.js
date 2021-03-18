@@ -1,13 +1,25 @@
 
 const { FinanceLatticeModel, Constants } = require("../FinanceLatticeModel");
-const binaryTree = new FinanceLatticeModel({
-  S: 85.370003,
-  K: 87,
-  r: 0.28 / 100,
-  sigma: 58.546 / 100,
+const binaryTreeAmericanCall = new FinanceLatticeModel({
+  S: 5773.0772501,
+  K: 6000,
+  r: 1.75 / 100,
+  sigma: 0.29372016,
   t: 252,
-  option: Constants.Options.EUROPEAN.CALL,
+  option: Constants.Options.AMERICAN.CALL,
 });
-const root = binaryTree.getRoot();
+let root = binaryTreeAmericanCall.getRoot();
 console.log(root.profit.toString());
-binaryTree.exportToExcel();
+binaryTreeAmericanCall.exportToExcel("Punto4_AmericanCall");
+
+const binaryTreeAmericanPut = new FinanceLatticeModel({
+  S: 5773.0772501,
+  K: 6000,
+  r: 1.75 / 100,
+  sigma: 0.29372016,
+  t: 252,
+  option: Constants.Options.AMERICAN.PUT,
+});
+root = binaryTreeAmericanPut.getRoot();
+console.log(root.profit.toString());
+binaryTreeAmericanPut.exportToExcel("Punto4_AmericanPut");
