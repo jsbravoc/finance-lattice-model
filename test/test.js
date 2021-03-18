@@ -84,7 +84,7 @@ describe("FinanceLatticeModel manipulation", function () {
         const expectedResult = Decimal("22.927829447158824023");
         const root = binaryTree.getRoot();
         root.profit.equals(expectedResult).should.equal(true);
-      }).timeout(10000);
+      }).timeout(15000);
     });
     describe("European Call Price", function () {
       it("The price should be equal to theoretical price (Feb 16)", function () {
@@ -126,7 +126,7 @@ describe("FinanceLatticeModel manipulation", function () {
         const expectedResult = Decimal("17.527897978088676155");
         const root = binaryTree.getRoot();
         root.profit.equals(expectedResult).should.equal(true);
-      }).timeout(10000);
+      }).timeout(15000);
       it("The price should be equal to theoretical price (HW)", function () {
         const binaryTree = new FinanceLatticeModel({
           S: 85.370003,
@@ -139,7 +139,7 @@ describe("FinanceLatticeModel manipulation", function () {
         const expectedResult = Decimal("19.14132688430056051");
         const root = binaryTree.getRoot();
         root.profit.equals(expectedResult).should.equal(true);
-      }).timeout(10000);
+      }).timeout(15000);
     });
   });
 });
