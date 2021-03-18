@@ -1,6 +1,6 @@
 {
   "name": "finance-lattice-model",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Finance Lattice Model implementation",
   "main": "./FinanceLatticeModel/index.js",
   "scripts": {
